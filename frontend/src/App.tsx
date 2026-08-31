@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -12,9 +12,28 @@ import { getErrorInfo } from './errorMessages'
 import { PageTransition, AnimatedBalance, AnimatedProgressBar } from './animations'
 // #120 — onboarding tour
 import { useOnboardingTour } from './useOnboardingTour'
+// #125 — create stream wizard
+import { CreateStreamWizard } from './wizard/CreateStreamWizard'
+
+// #539 — register service worker for offline support
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('/sw.js', { scope: '/' })
+        .then((registration) => {
+          console.info('[SW] registered, scope:', registration.scope)
+        })
+        .catch((err) => {
+          console.warn('[SW] registration failed:', err)
+        })
+    })
+  }
+}
 
 function App() {
   const [count, setCount] = useState(0)
+  const [wizardOpen, setWizardOpen] = useState(false)
   // demo: simulate an error code returned from the contract
   const [errorCode, setErrorCode] = useState<number | null>(null)
 
@@ -132,6 +151,19 @@ function App() {
         <div data-tour="wallet" style={{ marginTop: '8px', opacity: 0, height: 1 }} aria-hidden="true" />
         {/* tour anchor for create stream */}
         <div data-tour="create-stream" style={{ opacity: 0, height: 1 }} aria-hidden="true" />
+
+        {/* #125 — create stream wizard trigger */}
+        <button
+          type="button"
+          className="btn btn-primary"
+          style={{ marginTop: '1rem' }}
+          onClick={() => setWizardOpen(true)}
+          data-testid="open-create-wizard"
+        >
+          Create Stream
+        </button>
+
+        {wizardOpen && <CreateStreamWizard onClose={() => setWizardOpen(false)} />}
       </section>
 
       <div className="ticks"></div>
